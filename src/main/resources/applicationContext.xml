@@ -48,7 +48,7 @@
 	<bean id="httpClientBuilder" class="org.apache.http.impl.client.HttpClientBuilder" factory-method="create">
 		<!--开启重试-->
 		<property name="retryHandler">
-			<bean class="com.twitter.handler.AllowTimeoutHttpRequestRetryHandler">
+			<bean class="com.papa.handler.AllowTimeoutHttpRequestRetryHandler">
 				<constructor-arg value="${rest.client.retryTimes}" />
 				<constructor-arg value="true" />
 			</bean>
