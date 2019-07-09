@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages={"com.papa.chong.controller","com.papa.chong.service"})
+@ComponentScan(basePackages={"com.papa.chong.controller","com.papa.chong.service","com.papa.redis","com.papa.config"})
 public class ChongApplication {
 
 	public static void main(String[] args) {

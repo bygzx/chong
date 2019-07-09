@@ -47,4 +47,10 @@ public class FXController extends AbstractController {
         JSONObject jsonObject = fxService.scan(page,vtype);
         return buildSuccess(jsonObject);
     }
+
+    @PostMapping("/test")
+    public Object test() {
+        JSONObject jsonObject = fxService.test();
+        return buildSuccess(jsonObject);
+    }
 }
