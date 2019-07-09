@@ -68,7 +68,10 @@ public class FXServiceImpl implements FXService {
             List<TradeItem> tradeItems = json2TradeItem(jsonObject.get("List").toString());
             if(tradeItems!=null && tradeItems.size()>0){
                 for(TradeItem tradeItem:tradeItems){
-                    redisService.zAdd(tradeItem.getTradeName(),tradeItem.getTradePrice(),timeStemp);
+                    if(tradeItem.getTradeName().equals("美元指数")||tradeItem.getTradeName().equals("欧元美元")
+                            ||tradeItem.getTradeName().equals("英镑美元")||tradeItem.getTradeName().equals("现货黄金")
+                            ||tradeItem.getTradeName().equals("美元人民币"))
+                    redisService.hmSet(tradeItem.getTradeName(),String.valueOf(timeStemp),tradeItem.getTradePrice());
                     //log.info(tradeItem.toString());
                 }
             }
@@ -76,6 +79,30 @@ public class FXServiceImpl implements FXService {
         return null;
     }
 
+    @Override
+    public JSONObject getDataByName(String name) {
+        JSONObject jsonObject = new JSONObject();
+        Map<Object,Object> objects = redisService.hmGetAll(name);
+        List<TradeItem> objects1 = new ArrayList<>();
+        if(objects!=null){
+            int i=0;
+            for (Map.Entry<Object,Object> entry : objects.entrySet()) {
+                i++;
+                if(i>=100){
+                    break;
+                }else {
+                    //System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+                    TradeItem tradeItem = new TradeItem();
+                    tradeItem.setTradeName(name);
+                    tradeItem.setTradePrice(String.valueOf(entry.getValue()));
+                    tradeItem.setTimeStamp(String.valueOf(entry.getKey()));
+                    objects1.add(tradeItem);
+                }
+            }
+            jsonObject.put("list",objects1);
+        }
+        return jsonObject;
+    }
 
 
     private String getHtml(long timeStemp){

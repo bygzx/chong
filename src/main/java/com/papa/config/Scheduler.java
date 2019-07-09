@@ -3,6 +3,7 @@ package com.papa.config;
 import com.papa.chong.service.FXService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  **/
 @Slf4j
 @Component
+@EnableScheduling
 public class Scheduler {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     @Autowired
@@ -34,17 +36,6 @@ public class Scheduler {
     //中国服务器时间段1
     @Scheduled(cron="*/5 * * * * ?")
     public void testTasks() {
-        //<1> 查看当前的时区
-        ZoneId defaultZone = ZoneId.systemDefault();
-        log.info("当前时区：{}",defaultZone); //此处打印为时区所在城市Asia/Shanghai
-        log.info("定时任务执行时间：" + dateFormat.format(new Date()));
-        int isProxy = 0;
-        String osName = System.getProperty("os.name"); //操作系统名称
-        //log.info("[Scheduler]#################osName####################{}",osName);
-        if(osName!=null && osName.contains("Windows")){
-            isProxy = 1;
-        }
-        int finalIsProxy = isProxy;
         threadPoolExecutor.submit(() ->
         {
             try {

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -120,6 +121,11 @@ public class RedisService {
     public Object hmGet(String key, Object hashKey){
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
         return hash.get(key,hashKey);
+    }
+
+    public Map<Object,Object> hmGetAll(String key){
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        return hash.entries(key);
     }
 
     /**

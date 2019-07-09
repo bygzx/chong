@@ -10,4 +10,5 @@ import com.papa.exception.HttpRequestException;
 public interface FXService {
     JSONObject scan(String page,String vtype) ;
     JSONObject test() ;
+    JSONObject getDataByName(String name);
 }

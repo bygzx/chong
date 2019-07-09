@@ -14,4 +14,5 @@ public class TradeItem {
     private String Change;
     private String ChangePre;
     private String EnglishName;
+    private String timeStamp;
 }
