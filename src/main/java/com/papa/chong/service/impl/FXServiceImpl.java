@@ -76,6 +76,8 @@ public class FXServiceImpl implements FXService {
                 }
             }
         }
+        long end = System.currentTimeMillis();
+        log.info("获取数据结束-----耗时：{}",end-timeStemp);
         return null;
     }
 
@@ -135,7 +137,11 @@ public class FXServiceImpl implements FXService {
             WebResponse response = page.getWebResponse();
             //if (response.getContentType().equals("application/json")) {
             json = response.getContentAsString();
-            log.info("json:{}", json);
+            if(!StringUtils.isEmpty(json)){
+                log.info("获取数据成功！");
+            }else{
+                log.error("获取数据失败！");
+            }
         }catch(Exception e){
             log.error(e.getMessage());
         }finally {
