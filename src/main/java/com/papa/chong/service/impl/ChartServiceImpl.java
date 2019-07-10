@@ -82,6 +82,7 @@ public class ChartServiceImpl implements ChartService{
             }
             Map<String,TradeItem> finalMap = sortMapDate(tradeItemMap);
             jsonObject.put("list",finalMap);
+            log.info(finalMap.toString());
         }
         return jsonObject;
     }
