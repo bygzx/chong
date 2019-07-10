@@ -15,4 +15,9 @@ public class TradeItem {
     private String ChangePre;
     private String EnglishName;
     private String timeStamp;
+    private String openPrice;
+    private String closePrice;
+    private String highPrice;
+    private String lowPrice;
+    private Integer count;
 }

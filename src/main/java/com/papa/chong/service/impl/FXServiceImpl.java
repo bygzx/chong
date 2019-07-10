@@ -70,8 +70,9 @@ public class FXServiceImpl implements FXService {
                 for(TradeItem tradeItem:tradeItems){
                     if(tradeItem.getTradeName().equals("美元指数")||tradeItem.getTradeName().equals("欧元美元")
                             ||tradeItem.getTradeName().equals("英镑美元")||tradeItem.getTradeName().equals("现货黄金")
-                            ||tradeItem.getTradeName().equals("美元人民币"))
-                    redisService.hmSet(tradeItem.getTradeName(),String.valueOf(timeStemp),tradeItem.getTradePrice());
+                            ||tradeItem.getTradeName().equals("美元人民币")) {
+                        redisService.hmSet(tradeItem.getTradeName(), String.valueOf(timeStemp), tradeItem.getTradePrice());
+                    }
                     //log.info(tradeItem.toString());
                 }
             }

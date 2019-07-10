@@ -1,6 +1,7 @@
 package com.papa.chong.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.papa.chong.service.ChartService;
 import com.papa.chong.service.FXService;
 import com.papa.exception.HttpRequestException;
 import com.papa.util.controller.AbstractController;
@@ -22,6 +23,8 @@ public class FXController extends AbstractController {
 
     @Autowired
     private FXService fxService;
+    @Autowired
+    private ChartService chartService;
 
     @PostMapping("/hello")
     public Object hello(){
@@ -56,6 +59,18 @@ public class FXController extends AbstractController {
     @PostMapping("/getDataByName")
     public Object getDataByName(String name) {
         JSONObject jsonObject = fxService.getDataByName(name);
+        return buildSuccess(jsonObject);
+    }
+
+    @PostMapping("/getDataToFront")
+    public Object getDataToFront(String name) {
+        JSONObject jsonObject = chartService.getDataToFront(name);
+        return buildSuccess(jsonObject);
+    }
+
+    @PostMapping("/getRange")
+    public Object getRange(String name, long begin, long end) {
+        JSONObject jsonObject = chartService.getRange(name,begin,end);
         return buildSuccess(jsonObject);
     }
 
