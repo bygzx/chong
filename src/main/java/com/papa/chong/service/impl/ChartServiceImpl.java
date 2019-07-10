@@ -40,13 +40,13 @@ public class ChartServiceImpl implements ChartService{
 
             int i =0;
             for (Map.Entry<String,String> entry : objects.entrySet()) {
-                i++;
+                /*i++;
                 if(i<100){
                     continue;
                 }
                 if(i>=300){
                     break;
-                }
+                }*/
 
                 //System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
                 Date date = new Date(Long.parseLong(String.valueOf(entry.getKey())));

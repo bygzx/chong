@@ -62,7 +62,7 @@ public class FXController extends AbstractController {
         return buildSuccess(jsonObject);
     }
 
-    @PostMapping("/getDataToFront")
+    @RequestMapping("/getDataToFront")
     public Object getDataToFront(String name) {
         JSONObject jsonObject = chartService.getDataToFront(name);
         return buildSuccess(jsonObject);
