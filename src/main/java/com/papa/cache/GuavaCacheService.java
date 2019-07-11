@@ -27,7 +27,7 @@ public class GuavaCacheService {
     public void put(String key,Object value){
         //if(stringCacheForTest.size()<10) {
             stringCacheForTest.put(key, value);
-            log.info("新增缓存到结尾----key:{},value:{}", key, value.toString());
+            log.info("新增元素到队尾----key:{},value:{}", key, value.toString());
         /*}else{
             log.info("队列已满，不插了");
         }*/
@@ -38,7 +38,9 @@ public class GuavaCacheService {
     }
     //获取map第一个元素
     public Object getFirstCacheValue(){
-        return stringCacheForTest.entrySet().iterator().next();
+        if(stringCacheForTest.size()>0) {
+            return stringCacheForTest.entrySet().iterator().next();
+        }else return null;
     }
     //打印所有元素
     public void printAllCacheValue(){
@@ -52,6 +54,7 @@ public class GuavaCacheService {
 
     public void deleteFristCacheValue(){
         Map.Entry<String,Object> entry = (Map.Entry<String,Object>)getFirstCacheValue();
-        log.info("删除第一个元素:{}",entry.toString());
+        stringCacheForTest.remove(entry.getKey());
+        log.info("踢出第一个元素:{}",entry.toString());
     }
 }

@@ -2,12 +2,15 @@ package com.papa.entity;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author Lucifer
  * @date 2019-07-09 21:02
  **/
 @Data
-public class TradeItem {
+public class TradeItem implements Serializable {
+    private static final long serialVersionUID = -6957361951748382519L;
     private String TradeCodeOnLine;
     private String TradeName;
     private String TradePrice;

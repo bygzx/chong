@@ -7,8 +7,12 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import com.papa.cache.GuavaCacheService;
+import com.papa.config.GetSpringBean;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Random;
 
@@ -23,6 +27,8 @@ public class RandomSentenceSpout extends BaseRichSpout {
 
     SpoutOutputCollector spoutOutputCollector;
     Random random;
+    /*@Resource
+    private GuavaCacheService guavaCacheService;*/
 
     // 进行spout的一些初始化工作，包括参数传递
     @SuppressWarnings("rawtypes")
@@ -34,7 +40,7 @@ public class RandomSentenceSpout extends BaseRichSpout {
     // 进行Tuple处理的主要方法
     @Override
     public void nextTuple() {
-        Utils.sleep(2000);
+        /*Utils.sleep(2000);
         String[] sentences = new String[]{
                 "jikexueyuan is a good school",
                 "And if the golden sun",
@@ -59,18 +65,30 @@ public class RandomSentenceSpout extends BaseRichSpout {
         log.info("选择的数据源是: {}" , sentence);
         // 使用emit方法进行Tuple发布，参数用Values申明
         spoutOutputCollector.emit(new Values(sentence.trim().toLowerCase()));
+        */
+        GuavaCacheService guavaCacheService = GetSpringBean.getBean(GuavaCacheService.class);
+        Object o = guavaCacheService.getFirstCacheValue();
+        if(o!=null) {
+            //Map.Entry<String, Object> entry = (Map.Entry<String, Object>) o;
+            //拿完就删
+            guavaCacheService.deleteFristCacheValue();
+            spoutOutputCollector.emit(new Values(o));
+        }else{
+            spoutOutputCollector.emit(new Values(o));
+        }
+
     }
     // 消息保证机制中的ack确认方法
     //继承IRichSpout则需要自己写
-    /*@Override
+    @Override
     public void ack(Object id) {
-    }*/
+    }
 
     // 消息保证机制中的fail确认方法
     //继承IRichSpout则需要自己写
-    /*@Override
+    @Override
     public void fail(Object id) {
-    }*/
+    }
 
     // 声明字段
     @Override

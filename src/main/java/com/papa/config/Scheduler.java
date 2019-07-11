@@ -39,8 +39,8 @@ public class Scheduler {
         threadPoolExecutor.submit(() ->
         {
             try {
-                //fXService.test();
-                fXService.testCache();
+                fXService.test();
+                //fXService.testCache();
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -6,6 +6,7 @@ import backtype.storm.topology.TopologyBuilder;
 import com.papa.jstorm.bolt.PrintBolt;
 import com.papa.jstorm.spout.RandomSentenceSpout;
 import org.springframework.stereotype.Component;
+//import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.Arrays;

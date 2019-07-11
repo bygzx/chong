@@ -76,7 +76,8 @@ public class FXServiceImpl implements FXService {
                     if(tradeItem.getTradeName().equals("美元指数")||tradeItem.getTradeName().equals("欧元美元")
                             ||tradeItem.getTradeName().equals("英镑美元")||tradeItem.getTradeName().equals("现货黄金")
                             ||tradeItem.getTradeName().equals("美元人民币")) {
-                        redisService.hmSet(tradeItem.getTradeName(), String.valueOf(timeStemp), tradeItem.getTradePrice());
+                        //redisService.hmSet(tradeItem.getTradeName(), String.valueOf(timeStemp), tradeItem.getTradePrice());
+                        pushToCache(timeStemp,tradeItem);
                     }
                     //log.info(tradeItem.toString());
                 }
@@ -85,6 +86,11 @@ public class FXServiceImpl implements FXService {
         long end = System.currentTimeMillis();
         log.info("获取数据结束-----耗时：{}",end-timeStemp);
         return null;
+    }
+    //把数据丢到本地缓存给jstorm处理
+    private void pushToCache(long timeStemp,TradeItem tradeItem){
+        String name = tradeItem.getTradeName()+"_"+timeStemp;
+        guavaCacheService.put(name,tradeItem);
     }
 
     @Override
