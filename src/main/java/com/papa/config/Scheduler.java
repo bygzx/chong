@@ -40,6 +40,7 @@ public class Scheduler {
         {
             try {
                 //fXService.test();
+                fXService.testCache();
             } catch (Exception e) {
                 e.printStackTrace();
             }

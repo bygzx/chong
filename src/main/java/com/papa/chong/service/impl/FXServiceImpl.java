@@ -5,10 +5,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
+import com.papa.cache.GuavaCacheService;
 import com.papa.chong.service.FXService;
 import com.papa.entity.TradeItem;
 import com.papa.exception.HttpRequestException;
 import com.papa.redis.RedisService;
+import com.papa.util.constant.Constants;
+import com.papa.util.date.DateUtils;
 import com.papa.util.http.HttpRequestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,8 @@ public class FXServiceImpl implements FXService {
 
     @Resource
     private RedisService redisService;
+    @Resource
+    private GuavaCacheService guavaCacheService;
 
     private static String realUrl = "https://forex.fx168.com/";
 
@@ -105,6 +110,23 @@ public class FXServiceImpl implements FXService {
             jsonObject.put("list",objects1);
         }
         return jsonObject;
+    }
+
+    @Override
+    public void testCache() {
+        Date date = new Date();
+        String dateStr = DateUtils.format(date, Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS);
+        guavaCacheService.put(dateStr,date.getTime());
+        //打印元素
+        guavaCacheService.printAllCacheValue();
+    }
+
+    @Override
+    public void deleteFristCache() {
+        Object o = guavaCacheService.getFirstCacheValue();
+        log.info("获取第一个元素！！！");
+        guavaCacheService.deleteFristCacheValue();
+
     }
 
 

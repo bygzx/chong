@@ -74,4 +74,10 @@ public class FXController extends AbstractController {
         return buildSuccess(jsonObject);
     }
 
+    @PostMapping("/deleteFristCache")
+    public Object deleteFristCache() {
+        fxService.deleteFristCache();
+        return buildSuccess(111);
+    }
+
 }

@@ -11,4 +11,6 @@ public interface FXService {
     JSONObject scan(String page,String vtype) ;
     JSONObject test() ;
     JSONObject getDataByName(String name);
+    void testCache();
+    void deleteFristCache();
 }
