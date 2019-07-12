@@ -18,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 public class GuavaCacheService {
     //创建静态缓存
     private static volatile Map<String,Object> stringCacheForTest = new LinkedHashMap<>();
+    //删除、读取锁
+    //private boolean lock=false;
 
     //单例模式获取缓存
     public static Map<String,Object>getStringCache(){
@@ -39,8 +41,15 @@ public class GuavaCacheService {
     //获取map第一个元素
     public Object getFirstCacheValue(){
         if(stringCacheForTest.size()>0) {
-            return stringCacheForTest.entrySet().iterator().next();
-        }else return null;
+            /*if(lock) {
+                lock = true;*/
+                return stringCacheForTest.entrySet().iterator().next();
+            /*}else{
+                return null;
+            }*/
+        }else {
+            return null;
+        }
     }
     //打印所有元素
     public void printAllCacheValue(){
@@ -55,6 +64,7 @@ public class GuavaCacheService {
     public void deleteFristCacheValue(){
         Map.Entry<String,Object> entry = (Map.Entry<String,Object>)getFirstCacheValue();
         stringCacheForTest.remove(entry.getKey());
+        //lock = false;
         log.info("踢出第一个元素:{}",entry.toString());
     }
 }

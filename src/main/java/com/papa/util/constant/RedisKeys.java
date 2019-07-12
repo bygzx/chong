@@ -10,7 +10,9 @@ public enum RedisKeys {
     PHONE_CHECK_CODE_KEY("xx.user.smsCheckCode"),
 
     /** 用户token, key: 前缀 + uid, val. token*/
-    USER_TOKEN_KEY("xx.user.token")
+    USER_TOKEN_KEY("xx.user.token"),
+    /** 分钟redis结束时间*/
+    MIN_CLOSE_PRICE("min.close.price.")
     ;
 
     private String prefix;

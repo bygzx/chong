@@ -165,7 +165,7 @@ public class RedisService {
      * @param key
      * @return
      */
-    public Set<Object> setMembers(String key){
+    public Set<Object> getMembers(String key){
         SetOperations<String, Object> set = redisTemplate.opsForSet();
         return set.members(key);
     }
@@ -173,7 +173,7 @@ public class RedisService {
     /**
      * 有序集合添加
      * @param key
-     * @param value
+     * @param value 不能相同，相同就会覆盖原来的
      * @param timeStemp
      */
     public void zAdd(String key,Object value,long timeStemp){

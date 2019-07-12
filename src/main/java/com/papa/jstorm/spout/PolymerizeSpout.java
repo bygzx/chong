@@ -23,10 +23,10 @@ import java.util.Random;
  **/
 @SuppressWarnings("serial")
 @Slf4j
-public class RandomSentenceSpout extends BaseRichSpout {
+public class PolymerizeSpout extends BaseRichSpout {
 
     SpoutOutputCollector spoutOutputCollector;
-    Random random;
+    //Random random;
     /*@Resource
     private GuavaCacheService guavaCacheService;*/
 
@@ -35,12 +35,12 @@ public class RandomSentenceSpout extends BaseRichSpout {
     @Override
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector collector) {
         spoutOutputCollector = collector;
-        random = new Random();
+        //random = new Random();
     }
     // 进行Tuple处理的主要方法
     @Override
     public void nextTuple() {
-        /*Utils.sleep(2000);
+        /*
         String[] sentences = new String[]{
                 "jikexueyuan is a good school",
                 "And if the golden sun",
