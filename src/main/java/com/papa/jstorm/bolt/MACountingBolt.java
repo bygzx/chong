@@ -15,6 +15,7 @@ import com.papa.config.GetSpringBean;
 import com.papa.entity.TradeItem;
 import com.papa.redis.RedisService;
 import com.papa.util.constant.Constants;
+import com.papa.util.constant.RedisKeys;
 import com.papa.util.date.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,10 +46,17 @@ public class MACountingBolt extends BaseRichBolt {
             Map.Entry<String,Long> entry = map.entrySet().iterator().next();
             if(entry!=null){
                 //
+                //tableName = RedisKeys.MIN_CLOSE_PRICE+tradeItem.getTradeName();
+                //map.put(tableName,sort);
+                //countMA_x( TimeStamp, tradeItem, x);
                 Set<Object> set = redisService.rangeByScore(entry.getKey(),entry.getValue(),entry.getValue());
             }
         }
         collector.emit(new Values("2"));
+    }
+    //计算x均线
+    private void countMA_x(long TimeStamp,TradeItem tradeItem,int x){
+
     }
 
     @Override

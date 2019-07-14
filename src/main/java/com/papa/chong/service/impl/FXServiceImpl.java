@@ -11,6 +11,7 @@ import com.papa.entity.TradeItem;
 import com.papa.exception.HttpRequestException;
 import com.papa.redis.RedisService;
 import com.papa.util.constant.Constants;
+import com.papa.util.constant.RedisKeys;
 import com.papa.util.date.DateUtils;
 import com.papa.util.http.HttpRequestUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,9 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author eric
@@ -35,6 +39,9 @@ public class FXServiceImpl implements FXService {
     private GuavaCacheService guavaCacheService;
 
     private static String realUrl = "https://forex.fx168.com/";
+
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5,10, 30, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(50));
 
     @Override
     public JSONObject scan(String page,String vtype)  {
@@ -76,8 +83,26 @@ public class FXServiceImpl implements FXService {
                     if(tradeItem.getTradeName().equals("美元指数")||tradeItem.getTradeName().equals("欧元美元")
                             ||tradeItem.getTradeName().equals("英镑美元")||tradeItem.getTradeName().equals("现货黄金")
                             ||tradeItem.getTradeName().equals("美元人民币")) {
+                        switch (tradeItem.getTradeName()){
+                            case "欧元美元": {
+                                tradeItem.setTradeName(RedisKeys.EURUSD.toString().replace(".", ""));
+                                redisService.hmSet(RedisKeys.EURUSD.toString().replace(".", ""), String.valueOf(timeStemp), tradeItem.getTradePrice());break;
+                            }
+                            case "现货黄金":
+                                tradeItem.setTradeName(RedisKeys.GOLD.toString().replace(".", ""));
+                                redisService.hmSet(RedisKeys.GOLD.toString().replace(".",""), String.valueOf(timeStemp), tradeItem.getTradePrice());break;
+                            case "美元人民币":
+                                tradeItem.setTradeName(RedisKeys.USDRMB.toString().replace(".", ""));
+                                redisService.hmSet(RedisKeys.USDRMB.toString().replace(".",""), String.valueOf(timeStemp), tradeItem.getTradePrice());break;
+                            case "美元指数":
+                                tradeItem.setTradeName(RedisKeys.USDINDEX.toString().replace(".", ""));
+                                redisService.hmSet(RedisKeys.USDINDEX.toString().replace(".",""), String.valueOf(timeStemp), tradeItem.getTradePrice());break;
+                            case "英镑美元":
+                                tradeItem.setTradeName(RedisKeys.GBPUSD.toString().replace(".", ""));
+                                redisService.hmSet(RedisKeys.GBPUSD.toString().replace(".",""), String.valueOf(timeStemp), tradeItem.getTradePrice());break;
+                        }
                         //redisService.hmSet(tradeItem.getTradeName(), String.valueOf(timeStemp), tradeItem.getTradePrice());
-                        pushToCache(timeStemp,tradeItem);
+                        //pushToCache(timeStemp,tradeItem);
                     }
                     //log.info(tradeItem.toString());
                 }
@@ -116,6 +141,74 @@ public class FXServiceImpl implements FXService {
             jsonObject.put("list",objects1);
         }
         return jsonObject;
+    }
+    @Override
+    public JSONObject swichData(String name) {
+        JSONObject jsonObject = new JSONObject();
+        Map<Object,Object> objects = redisService.hmGetAll(name);
+        Map<Object,Object> Array1 = new HashMap<>();
+        Map<Object,Object> Array2 = new HashMap<>();
+        Map<Object,Object> Array3 = new HashMap<>();
+        Map<Object,Object> Array4 = new HashMap<>();
+        Map<Object,Object> Array0 = new HashMap<>();
+        List<TradeItem> objects1 = new ArrayList<>();
+        if(objects!=null){
+            int size = objects.size();
+            log.info("总条数：{}",size);
+            int i=0;
+            for (Map.Entry<Object,Object> entry : objects.entrySet()) {
+                i++;
+            if(i%5==0){
+                Array0.put(entry.getKey(),entry.getValue());
+            }else if(i%5==1){
+                Array1.put(entry.getKey(),entry.getValue());
+            }else if(i%5==2){
+                Array2.put(entry.getKey(),entry.getValue());
+            }else if(i%5==3){
+                Array3.put(entry.getKey(),entry.getValue());
+            }else if(i%5==4){
+                Array4.put(entry.getKey(),entry.getValue());
+            }
+            }
+            threadPoolExecutor.submit(() ->{submitData(Array0,name,0);});
+            threadPoolExecutor.submit(() ->{submitData(Array1,name,1);});
+            threadPoolExecutor.submit(() ->{submitData(Array2,name,2);});
+            threadPoolExecutor.submit(() ->{submitData(Array3,name,3);});
+            threadPoolExecutor.submit(() ->{submitData(Array4,name,4);});
+            //
+        }
+        jsonObject.put("success",Constants.FLAG_1);
+        return jsonObject;
+    }
+    private void submitData(Map<Object,Object> Array,String name,int tag){
+            long startTime = System.currentTimeMillis();
+            try {
+                if(Array!=null){
+                    int size = Array.size();
+                    int i=0;
+                    for (Map.Entry<Object,Object> entry : Array.entrySet()) {
+                        i++;
+                        switch (name){
+                            case "欧元美元": {
+                                redisService.hmSet(RedisKeys.EURUSD.toString().replace(".", ""), entry.getKey(), entry.getValue());
+                                break;
+                            }
+                            case "现货黄金": redisService.hmSet(RedisKeys.GOLD.toString().replace(".",""),entry.getKey(),entry.getValue());break;
+                            case "美元人民币": redisService.hmSet(RedisKeys.USDRMB.toString().replace(".",""),entry.getKey(),entry.getValue());break;
+                            case "美元指数": redisService.hmSet(RedisKeys.USDINDEX.toString().replace(".",""),entry.getKey(),entry.getValue());break;
+                            case "英镑美元": redisService.hmSet(RedisKeys.GBPUSD.toString().replace(".",""),entry.getKey(),entry.getValue());break;
+                        }
+                        if(i%100==0){
+                            log.info("线程：{}，总条数：{}，完成100条迁移，共完成：{}",tag,size,i);
+                        }
+                    }
+                    log.info("线程结束：{},总条数:{},完成条数：{},耗时：{}",tag,size,i,System.currentTimeMillis()-startTime);
+                    //
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
     }
 
     @Override

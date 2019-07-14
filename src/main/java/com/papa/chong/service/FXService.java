@@ -13,4 +13,5 @@ public interface FXService {
     JSONObject getDataByName(String name);
     void testCache();
     void deleteFristCache();
+    JSONObject swichData(String name);
 }

@@ -7,6 +7,7 @@ import com.papa.exception.HttpRequestException;
 import com.papa.util.controller.AbstractController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +27,7 @@ public class FXController extends AbstractController {
     @Autowired
     private ChartService chartService;
 
-    @PostMapping("/hello")
+    @GetMapping("/hello")
     public Object hello(){
         JSONObject jsonObject = new JSONObject();
         Date date = new Date();
@@ -59,6 +60,12 @@ public class FXController extends AbstractController {
     @PostMapping("/getDataByName")
     public Object getDataByName(String name) {
         JSONObject jsonObject = fxService.getDataByName(name);
+        return buildSuccess(jsonObject);
+    }
+
+    @PostMapping("/swichData")
+    public Object swichData(String name) {
+        JSONObject jsonObject = fxService.swichData(name);
         return buildSuccess(jsonObject);
     }
 

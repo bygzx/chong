@@ -27,8 +27,8 @@ public class ChongApplication {
 		ConfigurableApplicationContext context = SpringApplication.run(ChongApplication.class, args);
 		GetSpringBean springBean=new GetSpringBean();
 		springBean.setApplicationContext(context);
-		TopologyTest app = context.getBean(TopologyTest.class);
-		app.main(args);
+		/*TopologyTest app = context.getBean(TopologyTest.class);
+		app.main(args);*/
 
 	}
 
