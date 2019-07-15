@@ -69,6 +69,15 @@ public class DateUtils {
         return date;
     }
 
+    public static long addMin(int min, long dateLong)  {
+        Calendar calendar = Calendar.getInstance();
+        Date date = new Date(dateLong);
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, min);
+        date = calendar.getTime();
+        return date.getTime();
+    }
+
     public static Date getDayLastTime( Date date)  {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

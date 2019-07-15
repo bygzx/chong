@@ -28,14 +28,20 @@ import java.util.Map;
 @SuppressWarnings("serial")
 @Slf4j
 public class NotificationBolt extends BaseRichBolt {
-   // private OutputCollector collector;
+    private OutputCollector collector;
+    private RedisService redisService ;
     @Override
     public void prepare(Map var1, TopologyContext var2, OutputCollector outputCollector){
-        //collector = outputCollector;
+        collector = outputCollector;
+        redisService = GetSpringBean.getBean(RedisService.class);
     }
     @Override
     public void execute(Tuple tuple) {
-        log.info("接收的数据：{}",tuple.getValue(0));
+        if(tuple!=null&& tuple.getValue(0)!=null){
+            Map.Entry<String,Long> entry =(Map.Entry<String,Long>)tuple.getValue(0);
+            //TODO 根据各种策略取数对比判断是否需要发消息
+
+        }
     }
 
     @Override

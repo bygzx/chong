@@ -56,7 +56,12 @@
 			<artifactId>fastjson</artifactId>
 			<version>1.2.44</version>
 		</dependency>
-
+		<!-- 过滤表情包 begin-->
+		<dependency>
+			<groupId>com.vdurmont</groupId>
+			<artifactId>emoji-java</artifactId>
+			<version>4.0.0</version>
+		</dependency>
 
 		<!-- Protostuff -->
 		<dependency>

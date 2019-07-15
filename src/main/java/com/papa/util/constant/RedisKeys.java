@@ -14,13 +14,14 @@ public enum RedisKeys {
     /** 分钟redis结束时间*/
     MIN_CLOSE_PRICE("min.close.price."),
     /** MA*/
-    MA5("MA5."),
-    MA10("MA10."),
-    MA15("MA15."),
-    MA30("MA30."),
-    MA60("MA60."),
-    MA120("MA120."),
-    MA240("MA240."),
+    MA(".MA"),
+    MA5(".MA5"),
+    MA10(".MA10"),
+    MA15(".MA15"),
+    MA30(".MA30"),
+    MA60(".MA60"),
+    MA120(".MA120"),
+    MA240(".MA240"),
 
 
     GOLD("GOLD."),
