@@ -15,7 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * 序列化工具类（基于 Protostuff 实现）
  *
- * @author huangyong & Rosun
+ * @author eric
  * @since 1.0.0
  */
 public class SerializationUtil {

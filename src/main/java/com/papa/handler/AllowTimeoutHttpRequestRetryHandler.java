@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 
 /**
- * Created by liyusheng on 2017/9/15.
+ * Created by eric on 2017/9/15.
  */
 public class AllowTimeoutHttpRequestRetryHandler extends DefaultHttpRequestRetryHandler {
 

@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Created by liyusheng on 2018/1/4.
+ * Created by eric on 2018/1/4.
  */
 public class DateUtils {
 //    public static final String YYYYMMDD_HHMMSS = "yyyy-MM-dd HH:mm:ss";
@@ -70,6 +70,21 @@ public class DateUtils {
     }
 
     public static long addMin(int min, long dateLong)  {
+        Calendar calendar = Calendar.getInstance();
+        Date date = new Date(dateLong);
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, min);
+        date = calendar.getTime();
+        return date.getTime();
+    }
+
+    /**
+     * 跳过周末获取
+     * @param min
+     * @param dateLong
+     * @return
+     */
+    public static long addMinSkipWeekend(int min, long dateLong)  {
         Calendar calendar = Calendar.getInstance();
         Date date = new Date(dateLong);
         calendar.setTime(date);

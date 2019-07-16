@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 
 /**
- * @author binfeng huang
+ * @author eric
  * @date 2018/4/27 12:38
  **/
 public class EmojiUtils {

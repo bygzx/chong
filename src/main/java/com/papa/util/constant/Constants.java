@@ -1,7 +1,7 @@
 package com.papa.util.constant;
 
 /**
- * Created by liyusheng on 2018/1/2.
+ * Created by eric on 2018/1/2.
  */
 public class Constants {
 

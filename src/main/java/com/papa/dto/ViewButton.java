@@ -3,7 +3,7 @@ package com.papa.dto;
 import lombok.Data;
 
 /**
- * @author binfeng huang
+ * @author eric
  * @date 2019/4/25 8:37
  **/
 @Data
