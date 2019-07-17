@@ -8,6 +8,8 @@ import com.papa.jstorm.bolt.NotificationBolt;
 import com.papa.jstorm.bolt.PolymerizeBolt;
 import com.papa.jstorm.spout.PolymerizeSpout;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 //import org.springframework.stereotype.Component;
 
 
@@ -33,9 +35,9 @@ public class TopologyTest {
         builder.setBolt("NotificationBolt", new NotificationBolt(), 1).shuffleGrouping("MACountingBolt");
         config.setDebug(false);
         /*// 配置zookeeper连接主机地址，可以使用集合存放多个
-        config.put(Config.STORM_ZOOKEEPER_SERVERS, Arrays.asList("127.0.0.1"));
+        config.put(Config.STORM_ZOOKEEPER_SERVERS, Arrays.asList("192.168.99.100"));
         // 配置zookeeper连接端口，默认2181
-        config.put(Config.STORM_ZOOKEEPER_PORT, 2181); */
+        config.put(Config.STORM_ZOOKEEPER_PORT, 2181);*/
         /*
          * 初级工程师本地模式和准生产测试时，topology的work的数量都为1，
          * 导致对象在bolt和bolt节点传输时并没有走序列化方式，结果测试一切正常， 但是上生产后，因为work数量是10个，

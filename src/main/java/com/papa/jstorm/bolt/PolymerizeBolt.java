@@ -11,6 +11,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import com.alibaba.fastjson.JSON;
+import com.papa.cache.GuavaCacheService;
 import com.papa.config.GetSpringBean;
 import com.papa.entity.TradeItem;
 import com.papa.redis.RedisService;
@@ -35,10 +36,12 @@ import java.util.Map;
 public class PolymerizeBolt extends BaseRichBolt {
     private OutputCollector collector;
     private RedisService redisService ;
+    private GuavaCacheService guavaCacheService;
     @Override
     public void prepare(Map var1, TopologyContext var2, OutputCollector var3){
         collector = var3;
         redisService = GetSpringBean.getBean(RedisService.class);
+        guavaCacheService = GetSpringBean.getBean(GuavaCacheService.class);
     }
 
     @Override
@@ -140,9 +143,10 @@ public class PolymerizeBolt extends BaseRichBolt {
             log.info("*********************步骤3-5**************************{}",tradeItem.toString());
             map.put(tableName,sort);
             log.info("*********************步骤3-6**************************{}",tradeItem.toString());
-            String lockName = tableName+"_"+sort;
+            //String lockName = tableName+"_"+sort;
             log.info("*********************步骤3-7**************************{}",tradeItem.toString());
-            if(redisService.lock(lockName)){
+            guavaCacheService.put(2,tableName+"_"+sort,tradeItem.getClosePrice());
+            /*if(redisService.lock(lockName)){
                 log.info("*********************步骤4-1**************************{}",tradeItem.toString());
                 if(redisService.rangeByScore(tableName,sort,sort)!=null){
                     log.info("*********************步骤4-2**************************{}",tradeItem.toString());
@@ -174,7 +178,7 @@ public class PolymerizeBolt extends BaseRichBolt {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
             log.info("*********************步骤3-8**************************{}",tradeItem.toString());
 
         } catch (ParseException e) {

@@ -1,5 +1,7 @@
 package com.papa.util.date;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,6 +14,7 @@ import java.util.stream.Stream;
 /**
  * Created by eric on 2018/1/4.
  */
+@Slf4j
 public class DateUtils {
 //    public static final String YYYYMMDD_HHMMSS = "yyyy-MM-dd HH:mm:ss";
 //    public static final String YYYYMMDD = "yyyy-MM-dd";
@@ -136,6 +139,26 @@ public class DateUtils {
         }
 
         return minsDiff;
+    }
+
+    public static int getDatePoor(long endDate, long nowDate) {
+
+        long nd = 1000 * 24 * 60 * 60;
+        long nh = 1000 * 60 * 60;
+        long nm = 1000 * 60;
+        // long ns = 1000;
+        // 获得两个时间的毫秒时间差异
+        long diff = endDate - nowDate;
+        /*// 计算差多少天
+        long day = diff / nd;
+        // 计算差多少小时
+        long hour = diff % nd / nh;
+        // 计算差多少分钟*/
+        long min = diff % nd % nh / nm;
+        // 计算差多少秒//输出结果
+        // long sec = diff % nd % nh % nm / ns;
+        log.info("两个时间差了 {} 分钟",min);
+        return (int)min ;
     }
 
     public static String format(Date date, String pattern) {
