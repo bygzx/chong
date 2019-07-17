@@ -13,6 +13,8 @@ public enum RedisKeys {
     USER_TOKEN_KEY("xx.user.token"),
     /** 分钟redis结束时间*/
     MIN_CLOSE_PRICE("min.close.price."),
+    /** 分钟redis结束时间锁**/
+    MIN_CLOSE_PRICE_LOCK("min.close.price.lock."),
     /** MA*/
     MA(".MA"),
     MA5(".MA5"),
@@ -35,7 +37,9 @@ public enum RedisKeys {
     RedisKeys(String prefix) {
         this.prefix = prefix;
     }
-
+    public String getName() {
+        return prefix;
+    }
     public String getKey(Object... args) {
         if (args.length < 1) {
             return this.prefix;

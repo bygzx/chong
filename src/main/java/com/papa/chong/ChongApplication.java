@@ -5,6 +5,7 @@ import backtype.storm.generated.AuthorizationException;
 import backtype.storm.generated.InvalidTopologyException;
 import com.papa.config.GetSpringBean;
 import com.papa.jstorm.topology.TopologyTest;
+import com.papa.main.FxMain;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -14,8 +15,9 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages={"com.papa.chong.controller",
 		"com.papa.chong.service","com.papa.redis",
 		"com.papa.config","com.papa.jstorm.topology",
-		"com.papa.cache"})
+		"com.papa.cache","com.papa.main"})
 public class ChongApplication {
+
 
 	/**
 	 * 非工程启动入口，所以不用main方法
@@ -27,8 +29,8 @@ public class ChongApplication {
 		ConfigurableApplicationContext context = SpringApplication.run(ChongApplication.class, args);
 		GetSpringBean springBean=new GetSpringBean();
 		springBean.setApplicationContext(context);
-		/*TopologyTest app = context.getBean(TopologyTest.class);
-		app.main(args);*/
+		TopologyTest app = context.getBean(TopologyTest.class);
+		app.main(args);
 
 	}
 

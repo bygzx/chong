@@ -29,7 +29,7 @@ public class GuavaCacheService {
     public void put(String key,Object value){
         //if(stringCacheForTest.size()<10) {
             stringCacheForTest.put(key, value);
-            log.info("新增元素到队尾----key:{},value:{}", key, value.toString());
+            //log.info("新增元素到队尾----key:{},value:{}", key, value.toString());
         /*}else{
             log.info("队列已满，不插了");
         }*/

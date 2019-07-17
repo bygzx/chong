@@ -1,13 +1,13 @@
 package com.papa.redis;
 
+import com.papa.exception.RedisException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -15,10 +15,14 @@ import java.util.concurrent.TimeUnit;
  * @date 2019/5/14 14:21
  **/
 @Service
+@Slf4j
 public class RedisService {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    public static final String LOCK_PREFIX = "redis_lock";
+    public static final int LOCK_EXPIRE = 3000; // ms  3秒
     /**
      * 写入缓存
      * @param key
@@ -192,6 +196,67 @@ public class RedisService {
     public Set<Object> rangeByScore(String key,long timeStemp,long timeStemp1){
         ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
         return zset.rangeByScore(key, timeStemp, timeStemp1);
+    }
+
+    public void zDelete(String key,long timeStemp,long timeStemp1){
+        ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
+        Set<Object> set = zset.rangeByScore(key, timeStemp, timeStemp1);
+        List<String> value = new ArrayList<>();
+        if(set!=null && set.size()>0){
+            for(Object o:set){
+                value.add(String.valueOf(o));
+                zset.remove(key,String.valueOf(o));
+            }
+
+        }
+        //zset.removeRange(key,timeStemp,timeStemp1);
+    }
+
+    /**
+     *  最终加强分布式锁
+     *
+     * @param key key值
+     * @return 是否获取到
+     */
+    public boolean lock(String key){
+        String lock = LOCK_PREFIX + key;
+        // 利用lambda表达式
+        return (Boolean) redisTemplate.execute((RedisCallback) connection -> {
+
+            long expireAt = System.currentTimeMillis() + LOCK_EXPIRE + 1;
+            Boolean acquire = connection.setNX(lock.getBytes(), String.valueOf(expireAt).getBytes());
+
+
+            if (acquire) {
+                return true;
+            } else {
+
+                byte[] value = connection.get(lock.getBytes());
+
+                if (Objects.nonNull(value) && value.length > 0) {
+
+                    long expireTime = Long.parseLong(new String(value));
+
+                    if (expireTime < System.currentTimeMillis()) {
+                        // 如果锁已经过期
+                        byte[] oldValue = connection.getSet(lock.getBytes(), String.valueOf(System.currentTimeMillis() + LOCK_EXPIRE + 1).getBytes());
+                        // 防止死锁
+                        return Long.parseLong(new String(oldValue)) < System.currentTimeMillis();
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
+     * 删除锁
+     *
+     * @param key
+     */
+    public void releaseLock(String key) {
+        String lock = LOCK_PREFIX + key;
+        redisTemplate.delete(lock);
     }
 
 }

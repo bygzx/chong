@@ -42,11 +42,14 @@ public class MACountingBolt extends BaseRichBolt {
     }
     @Override
     public void execute(Tuple tuple) {
+
         Map<String,Long> map =(Map<String,Long>)tuple.getValue(0);
         Map.Entry<String,Long> entry = null;
         if(map.size()>0){
+            log.info("MACountingBolt接到数据，开始处理");
             entry = map.entrySet().iterator().next();
             if(entry!=null){
+
                 //获取时间序列
                 long dateLong = entry.getValue();
                 String tableName = entry.getKey();
@@ -76,7 +79,7 @@ public class MACountingBolt extends BaseRichBolt {
         }
         //存到redis
         if(!StringUtils.isEmpty(maX)) {
-            String tableName1 = tableName.replace(RedisKeys.MIN_CLOSE_PRICE + "", "") + RedisKeys.MA + x;
+            String tableName1 = tableName.replace(RedisKeys.MIN_CLOSE_PRICE.getName() + "", "") + RedisKeys.MA.getName() + x;
             redisService.zAdd(tableName1, maX, dateLong);
         }
     }

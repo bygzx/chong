@@ -14,4 +14,6 @@ public interface FXService {
     void testCache();
     void deleteFristCache();
     JSONObject swichData(String name);
+
+    JSONObject getFx678Sid();
 }

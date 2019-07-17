@@ -87,4 +87,10 @@ public class FXController extends AbstractController {
         return buildSuccess(111);
     }
 
+    @PostMapping("/getFx678Sid")
+    public Object getFx678Sid() {
+        JSONObject jsonObject = fxService.getFx678Sid();
+        return buildSuccess(jsonObject);
+    }
+
 }

@@ -26,6 +26,7 @@ public class Scheduler {
     @Autowired
     private FXService fXService;
 
+
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5,10, 30, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(50));
     //每隔5分钟执行一次

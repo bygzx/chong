@@ -7,6 +7,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.papa.cache.GuavaCacheService;
 import com.papa.chong.service.FXService;
+import com.papa.chong.service.WebSocketExecutor;
 import com.papa.entity.TradeItem;
 import com.papa.exception.HttpRequestException;
 import com.papa.redis.RedisService;
@@ -14,11 +15,14 @@ import com.papa.util.constant.Constants;
 import com.papa.util.constant.RedisKeys;
 import com.papa.util.date.DateUtils;
 import com.papa.util.http.HttpRequestUtil;
+import com.papa.websocket.MyWebSocketClient;
 import lombok.extern.slf4j.Slf4j;
+import org.java_websocket.WebSocket;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -53,7 +57,7 @@ public class FXServiceImpl implements FXService {
         try {
             respon = HttpRequestUtil.doPostAndReturnString(url,map);
         } catch (HttpRequestException e) {
-            //e.printStackTrace();
+            //log.error(e.getMessage());
             log.error("请求失败，再请求一遍");
             try {
                 respon = HttpRequestUtil.doPostAndReturnString(url,map);
@@ -180,6 +184,149 @@ public class FXServiceImpl implements FXService {
         jsonObject.put("success",Constants.FLAG_1);
         return jsonObject;
     }
+
+    @Override
+    public JSONObject getFx678Sid() {
+        JSONObject jsonObject = new JSONObject();
+        getFx678Data();
+        /*long currentTime = System.currentTimeMillis();
+        String url = "https://stat.fx678.com:9970/socket.io/?EIO=3&transport=polling&t="+currentTime+"-1";
+        String result ="";
+        String sid = "";
+        try {
+            result = HttpRequestUtil.doGetAndReturnString(url);
+            sid = getSid(result);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        if(!StringUtils.isEmpty(sid)){
+            String finalSid = sid;
+            log.info("TAG:{},webscoket sid :{}",1,result);
+            threadPoolExecutor.submit(() ->{
+                int count = 1;
+                        MyWebSocketExecutor executor = new MyWebSocketExecutor();
+                        try {
+                            String wsUrl = "wss://stat.fx678.com:9970/socket.io/?EIO=3&transport=websocket&sid="+ finalSid;
+                            log.info("TAG:{},webscoket wsUrl :{}",1,wsUrl);
+                            MyWebSocketClient client = new MyWebSocketClient(wsUrl, executor,1);
+                            client.connect();
+                            while (!client.getReadyState().equals(WebSocket.READYSTATE.OPEN)) {
+                                log.info("TAG:{},还没有打开,client状态：{}",1,client.getReadyState());
+                                Thread.sleep( 3 * 1000);
+                            }
+                            log.info("TAG:{},建立websocket连接",1);
+
+                            client.send("2probe");
+                            if(count==1){
+                                getFx678Data();
+                            }
+                            count++;
+                        } catch (Exception e) {
+                            log.error(e.getMessage());
+                        }
+
+                        while(!executor.isClosed()) {
+                            log.info("TAG:{},WebSocket未断开，继续接受数据中...",1);
+                            try {
+                                Thread.sleep( 10 * 1000);
+                            } catch (Exception e) {
+                                log.error(e.getMessage());
+                            }
+                        }
+            });
+
+        }*/
+        return jsonObject;
+    }
+    
+    private void getFx678Data()  {
+        /*try {
+            Thread.sleep( 1 * 1000);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }*/
+
+        try {
+
+            long currentTime = System.currentTimeMillis();
+            String url = "https://hqjs.fx678.com:9180/socket.io/?EIO=3&transport=polling&t="+currentTime+"-1";
+            //String url = "http://www.baidu.com";
+            String result ="";
+            String sid = "";
+            Map<String,String> map = new HashMap<>();
+            map.put("Origin","https://quote.fx678.com");
+            map.put("Referer","https://quote.fx678.com/");
+            map.put("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36");
+            result = HttpRequestUtil.doGetAndReturnString(url,map);
+            log.info("TAG:{},result1 sid :{}",2,result);
+            sid = getSid(result);
+
+            if(!StringUtils.isEmpty(sid)){
+                long currentTime1 = System.currentTimeMillis();
+                url = "https://hqjs.fx678.com:9180/socket.io/?EIO=3&transport=polling&t="+currentTime1+"-5&sid="+sid;
+                result = HttpRequestUtil.doGetAndReturnString(url);
+                log.info("TAG:{},result5 sid :{}",2,result);
+
+                currentTime1 = System.currentTimeMillis();
+                url = "https://hqjs.fx678.com:9180/socket.io/?EIO=3&transport=polling&t="+currentTime1+"-6&sid="+sid;
+                result = HttpRequestUtil.sendCPICPostRequest(url,"https://quote.fx678.com/");
+                log.info("TAG:{},result6 sid :{}",2,result);
+
+                currentTime1 = System.currentTimeMillis();
+                url = "https://hqjs.fx678.com:9180/socket.io/?EIO=3&transport=polling&t="+currentTime1+"-7&sid="+sid;
+                result = HttpRequestUtil.doGetAndReturnString(url);
+                log.info("TAG:{},result7 sid :{}",2,result);
+
+                currentTime1 = System.currentTimeMillis();
+                url = "https://hqjs.fx678.com:9180/socket.io/?EIO=3&transport=polling&t="+currentTime1+"-8&sid="+sid;
+                result = HttpRequestUtil.doGetAndReturnString(url);
+                log.info("TAG:{},result8 sid :{}",2,result);
+
+
+                String finalSid = sid;
+                log.info("TAG:{},webscoket sid :{}",2,result);
+                threadPoolExecutor.submit(() ->{
+                    MyWebSocketExecutor executor = new MyWebSocketExecutor();
+                    try {
+                        String wsUrl = "wss://hqjs.fx678.com:9180/socket.io/?EIO=3&transport=websocket&sid="+ finalSid;
+                        log.info("webscoket wsUrl :{}",wsUrl);
+                        MyWebSocketClient client = new MyWebSocketClient(wsUrl, executor,2);
+                        client.connect();
+                        while (!client.getReadyState().equals(WebSocket.READYSTATE.OPEN)) {
+                            log.info("TAG:{},还没有打开,client状态：{}",2,client.getReadyState());
+                            Thread.sleep( 3 * 1000);
+                        }
+                        log.info("TAG:{},建立websocket连接",2);
+
+                        client.send("2probe");
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                    }
+
+                    while(!executor.isClosed()) {
+                        log.info("TAG:{},WebSocket未断开，继续接受数据中...",2);
+                        try {
+                            Thread.sleep( 10 * 1000);
+                        } catch (Exception e) {
+                            log.error(e.getMessage());
+                        }
+                    }
+                });
+
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private String getSid(String result){
+        String s = "";
+        if(!StringUtils.isEmpty(result)) {
+            s = JSONObject.parseObject(result.substring(result.indexOf("0{") + 1, result.length())).get("sid").toString();
+        }
+        return s;
+    }
+
     private void submitData(Map<Object,Object> Array,String name,int tag){
             long startTime = System.currentTimeMillis();
             try {
@@ -206,7 +353,7 @@ public class FXServiceImpl implements FXService {
                     //
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
 
     }

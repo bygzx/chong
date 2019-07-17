@@ -19,9 +19,10 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -193,6 +194,38 @@ public class HttpRequestUtil {
         return sendReqeust(httpPost);
     }
 
+    public static String sendCPICPostRequest(String requestUrl, String referer) {
+
+        String payload = "255:42[\"code\",[\"BTCUSD\",\"1A0001\",\"HSI\",\"NIKKI\",\"DAX\",\"FTSE\",\"SP500\",\"USD\",\"EURUSD\",\"GBPUSD\",\"USDJPY\",\"AUDUSD\",\"XAU\",\"XPD\",\"XAG\",\"XAP\",\"GT\",\"CONC\",\"OILC\",\"SC0001\",\"HONC\",\"GALC\",\"CRB\",\"VIXDX\",\"HUIDX\",\"TIPUS\",\"CESIUS\",\"USG2Y\",\"USG5Y\",\"USG10Y\",\"USG30Y\",\"GJGB10\"]]";
+
+        StringBuffer jsonString;
+        try {
+            URL url = new URL(requestUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            connection.setRequestProperty("Referer", referer);
+
+            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
+            writer.write(payload);
+            writer.close();
+            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            jsonString = new StringBuffer();
+            String line;
+            while ((line = br.readLine()) != null) {
+                jsonString.append(line);
+            }
+            br.close();
+            connection.disconnect();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return jsonString.toString();
+    }
+
     /**
      * 发送get请求，若请求成功返回响应信息，否则抛出HttpRequestException异常
      * @param url 请求地址
@@ -215,6 +248,26 @@ public class HttpRequestUtil {
         RequestConfig config = getRequestConfig(connectTimeout , socketTimeOut);
         httpGet.setConfig(config);
         return sendReqeust(httpGet);
+    }
+
+    public static String doGetAndReturnString(String url , Map<String,String>header) throws  IOException {
+        HttpGet httpGet = new HttpGet(url);
+        String result = "";
+        for (Map.Entry<String,String> entry : header.entrySet()){
+            httpGet.addHeader(entry.getKey(),entry.getValue());
+        }
+        RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(CONNECT_TIMEOUT)
+                .setSocketTimeout(SOCKET_TIMEOUT)
+                .build();
+        httpGet.setConfig(config);
+        HttpResponse response = HttpClients.createDefault().execute(httpGet);
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            response.getEntity().writeTo(bos);
+            result = new String(bos.toByteArray(), "utf-8");
+        }
+        return result;
     }
 
     private static String sendReqeust(HttpUriRequest httpUriRequest) throws HttpRequestException {
