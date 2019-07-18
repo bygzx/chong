@@ -1,5 +1,6 @@
 package com.papa.util.date;
 
+import com.papa.util.constant.Constants;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.DateFormat;
@@ -164,6 +165,17 @@ public class DateUtils {
     public static String format(Date date, String pattern) {
         DateFormat df = new SimpleDateFormat(pattern);
         return df.format(date);
+    }
+
+    public static long transformToMinLong(long timeStamp) {
+        Date date = new Date(timeStamp);
+        String dateStr = format(date, Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM);
+        try {
+            date = parseDate(dateStr,Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date.getTime();
     }
 
     /**

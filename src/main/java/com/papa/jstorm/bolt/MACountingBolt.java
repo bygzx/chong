@@ -56,39 +56,21 @@ public class MACountingBolt extends BaseRichBolt {
             if(entry!=null) {
                 //获取当前分钟的long值
                 Date date = new Date();
-                String dateStr = DateUtils.format(date, Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM);
-                Date date1 = null;
-                try {
-                    date1 = DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm");
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                long nowMin = date1.getTime();
+                long nowMin = DateUtils.transformToMinLong(date.getTime());
                 //long beinDateLong = DateUtils.addMin(-1,nowMin);
-                Map.Entry<String, Object> entry1 = (Map.Entry<String, Object>) guavaCacheService.getFirstCacheValue(2);
-                if(entry1!=null && !StringUtils.isEmpty(entry1.getKey())){
-                    String keyName = entry1.getKey().split("_")[0];
-                    long dateLong1 = Long.parseLong(entry1.getKey().split("_")[1]);
-                    int mindiff = DateUtils.getDatePoor(nowMin, dateLong1);
-                    if (mindiff > 0) {
-                        for (int i = 1; i <= mindiff; i++) {
-                            Date newDate = DateUtils.addMin(-i, date);
-                            String dateStr1 = DateUtils.format(newDate, Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM);
-                            try {
-                                newDate = DateUtils.parseDate(dateStr1, "yyyy-MM-dd HH:mm");
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                            long newDateLong = newDate.getTime();
-                            keyName = keyName + "_" + newDateLong;
-                            guavaCacheService.printAllCacheValue(2);
-                            if (guavaCacheService.getCacheByKey(2, keyName) != null) {
-                                redisService.zAdd(entry1.getKey().split("_")[0], entry1.getValue() + "_" + newDateLong, newDateLong);
-                                guavaCacheService.deleteItemByKey(2, keyName);
-                            }
-                        }
+                //把从前1分钟到5分钟的数都丢到redis里
+                for(int i = 1; i <= 5; i++){
+                    long beinDateLong = DateUtils.addMin(-i,nowMin);
+                    beinDateLong = DateUtils.transformToMinLong(beinDateLong);
+                    String keyName = entry.getKey().split("_")[0]+"_"+beinDateLong;
+                    if(guavaCacheService.getCacheByKey(2,keyName)!=null){
+                        String closePrice = String.valueOf(guavaCacheService.getCacheByKey(2,keyName));
+                        redisService.zAdd(entry.getKey().split("_")[0], closePrice + "_" + beinDateLong, beinDateLong);
+                        guavaCacheService.deleteItemByKey(2, keyName);
                     }
+
                 }
+
                 /*Map<String,Object> map1 = guavaCacheService.getStringCache(2);
                 if(map1!=null && map1.size()>0){
                     Iterator<String> iterator = map1.keySet().iterator();

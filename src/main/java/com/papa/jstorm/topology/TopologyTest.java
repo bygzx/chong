@@ -35,7 +35,7 @@ public class TopologyTest {
         builder.setBolt("NotificationBolt", new NotificationBolt(), 1).shuffleGrouping("MACountingBolt");
         config.setDebug(false);
         /*// 配置zookeeper连接主机地址，可以使用集合存放多个
-        config.put(Config.STORM_ZOOKEEPER_SERVERS, Arrays.asList("192.168.99.100"));
+        config.put(Config.STORM_ZOOKEEPER_SERVERS, Arrays.asList("127.0.0.1"));
         // 配置zookeeper连接端口，默认2181
         config.put(Config.STORM_ZOOKEEPER_PORT, 2181);*/
         /*

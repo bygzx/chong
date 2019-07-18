@@ -1,13 +1,12 @@
 package com.papa.cache;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author eric
@@ -18,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class GuavaCacheService {
     //创建静态缓存
     private static volatile Map<String,Object> stringCacheForTest = new LinkedHashMap<>();
-    private static volatile Map<String,Object> stringCacheForMin = new LinkedHashMap<>();
+    private static volatile Map<String,Object> stringCacheForMin = new ConcurrentHashMap<>();
     //删除、读取锁
     //private boolean lock=false;
 
@@ -128,7 +127,7 @@ public class GuavaCacheService {
         Map.Entry<String,Object> entry = (Map.Entry<String,Object>)getFirstCacheValue();
         stringCacheForTest.remove(entry.getKey());
         //lock = false;
-        log.info("踢出第一个元素:{}",entry.toString());
+        //log.info("踢出第一个元素:{}",entry.toString());
     }
 
     public void deleteFristCacheValue(int type){
@@ -137,13 +136,13 @@ public class GuavaCacheService {
             case 1:{
                 Map.Entry<String,Object> entry = (Map.Entry<String,Object>)getFirstCacheValue();
                 stringCacheForTest.remove(entry.getKey());
-                log.info("踢出第一个元素:{}",entry.toString());
+                //log.info("踢出第一个元素:{}",entry.toString());
                 break;
             }
             case 2:{
                 Map.Entry<String,Object> entry = (Map.Entry<String,Object>)getFirstCacheValue(2);
                 stringCacheForMin.remove(entry.getKey());
-                log.info("踢出第一个元素:{}",entry.toString());
+                //log.info("踢出第一个元素:{}",entry.toString());
                 break;
             }
         }

@@ -303,12 +303,22 @@ public class FXServiceImpl implements FXService {
                         log.error(e.getMessage());
                     }
 
-                    while(!executor.isClosed()) {
+                    /*while(!executor.isClosed()) {
                         log.info("TAG:{},WebSocket未断开，继续接受数据中...",2);
                         try {
                             Thread.sleep( 10 * 1000);
                         } catch (Exception e) {
                             log.error(e.getMessage());
+                        }
+                    }*/
+                    if(executor.isClosed()){
+                        log.info("TAG:{},WebSocket断了...",2);
+                        try {
+                            log.info("TAG:{},WebSocket 1S之后准备重启...",2);
+                            Thread.sleep(1000);
+                            getFx678Data();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                     }
                 });
