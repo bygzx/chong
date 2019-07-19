@@ -125,7 +125,4 @@ public class MACountingBolt extends BaseRichBolt {
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
         outputFieldsDeclarer.declare(new Fields("word"));
     }
-
-
-
 }
