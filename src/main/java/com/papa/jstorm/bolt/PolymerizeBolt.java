@@ -46,7 +46,10 @@ public class PolymerizeBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        Map<String,Long> map = new HashMap<>();
+        // 存放 <tableName,key>
+        Map<String,String> map = new HashMap<>();
+        String tableName = "1";
+        String key =  "1";
         try {
             String closeKey = "";
             long begin = System.currentTimeMillis();
@@ -58,9 +61,10 @@ public class PolymerizeBolt extends BaseRichBolt {
                 //log.info("*********************步骤3**************************{}",entry.toString());
                 long timeStamp = DateUtils.transformToMinLong(Long.parseLong(entry.getValue().getTimeStamp()+"000"));
 
-                String tableName = "k_" + name;
+                tableName = "k_" + name;
                 //log.info("*********************步骤8**************************{}",entry.toString());
-                String key = name + "_" + String.valueOf(timeStamp);
+                //String key = name + "_" + String.valueOf(timeStamp);
+                key =  String.valueOf(timeStamp);
                 //log.info("*********************步骤9**************************{}",entry.toString());
                 if (redisService.hmGet(tableName, key) == null) {
                     //log.info("*********************步骤1-1**************************{}",entry.toString());
@@ -80,7 +84,7 @@ public class PolymerizeBolt extends BaseRichBolt {
                     redisService.hmSet(tableName, key, jsonStr);
                     //log.info("*********************步骤1-5**************************{}",entry.toString());
                     //生成点阵序列
-                    map = putMinClosePriceRedis(timeStamp,tradeItem);
+                    //map = putMinClosePriceRedis(timeStamp,tradeItem);
                 } else {
                     //log.info("*********************步骤2-1**************************{}",entry.toString());
                     TradeItem tradeItemTemp = entry.getValue();
@@ -99,12 +103,13 @@ public class PolymerizeBolt extends BaseRichBolt {
                     }
                     tradeItem.setClosePrice(tradeItemTemp.getTradePrice());
                     tradeItem.setCount((tradeItem.getCount() + 1));
+                    jsonStr = JSON.toJSONString(tradeItem);
                     //log.info("*********************步骤2-4**************************{}",entry.toString());
                     //生成hashkey
                     redisService.hmSet(tableName, key, jsonStr);
                     //log.info("*********************步骤2-5**************************{}",entry.toString());
                     //生成有序序列
-                    map = putMinClosePriceRedis(timeStamp,tradeItem);
+                    //map = putMinClosePriceRedis(timeStamp,tradeItem);
                 }
                 //String mesg = tuple.getString(0);
                 if (entry != null) {
@@ -120,66 +125,19 @@ public class PolymerizeBolt extends BaseRichBolt {
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
+            map.put(tableName,key);
             collector.emit(new Values(map));
         }
     }
 
-    private Map<String,Long> putMinClosePriceRedis(long timeStamp,TradeItem tradeItem){
-        //log.info("*********************步骤3-1**************************{}",tradeItem.toString());
+    /*private Map<String,Long> putMinClosePriceRedis(long timeStamp,TradeItem tradeItem){
         Map<String,Long> map = new HashMap<>();
         String tableName = "";
         long sort = DateUtils.transformToMinLong(timeStamp);
-        /*Date date = new Date(timeStamp);
-        //log.info("*********************步骤3-2**************************{}",tradeItem.toString());
-        String dateStr = DateUtils.format(date, Constants.DATE_FORMAT_YYYY_MM_DD_HH_MM);
-        //log.info("*********************步骤3-3**************************{}",tradeItem.toString());
-        try {
-            Date date1 = DateUtils.parseDate(dateStr,"yyyy-MM-dd HH:mm");
-            //log.info("*********************步骤3-4**************************{}",tradeItem.toString());
-            sort = date1.getTime();*/
             tableName = RedisKeys.MIN_CLOSE_PRICE.getName()+tradeItem.getTradeName();
-            //log.info("*********************步骤3-5**************************{}",tradeItem.toString());
-            map.put(tableName,sort);
-            //log.info("*********************步骤3-6**************************{}",tradeItem.toString());
-            //String lockName = tableName+"_"+sort;
-            //log.info("*********************步骤3-7**************************{}",tradeItem.toString());
             guavaCacheService.put(2,tableName+"_"+sort,tradeItem.getClosePrice());
-            /*if(redisService.lock(lockName)){
-                //log.info("*********************步骤4-1**************************{}",tradeItem.toString());
-                if(redisService.rangeByScore(tableName,sort,sort)!=null){
-                    //log.info("*********************步骤4-2**************************{}",tradeItem.toString());
-                    redisService.zDelete(tableName,sort,sort);
-                }
-                //log.info("*********************步骤4-3**************************{}",tradeItem.toString());
-                redisService.zAdd(tableName,tradeItem.getClosePrice()+"_"+sort,sort);
-                //log.info("*********************步骤4-4**************************{}",tradeItem.toString());
-                redisService.releaseLock(lockName);
-            }else{
-                //log.info("*********************步骤5-1**************************{}",tradeItem.toString());
-                try {
-                    Thread.sleep(1000);
-                    //log.info("*********************步骤5-2**************************{}",tradeItem.toString());
-                    if(redisService.lock(lockName)){
-                        //log.info("*********************步骤5-3**************************{}",tradeItem.toString());
-                        if(redisService.rangeByScore(tableName,sort,sort)!=null){
-                            //log.info("*********************步骤5-4**************************{}",tradeItem.toString());
-                            redisService.zDelete(tableName,sort,sort);
-                            //log.info("*********************步骤5-5**************************{}",tradeItem.toString());
-                        }
-                        redisService.zAdd(tableName,tradeItem.getClosePrice()+"_"+sort,sort);
-                        //log.info("*********************步骤5-6**************************{}",tradeItem.toString());
-                        redisService.releaseLock(lockName);
-                        //log.info("*********************步骤5-7**************************{}",tradeItem.toString());
-                    }else{
-                        log.info("获取锁失败，此条数据不处理");
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }*/
-            //log.info("*********************步骤3-8**************************{}",tradeItem.toString());
         return map;
-    }
+    }*/
 
 
     @Override

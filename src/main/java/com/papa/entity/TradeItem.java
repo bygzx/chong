@@ -23,4 +23,11 @@ public class TradeItem implements Serializable {
     private String highPrice;
     private String lowPrice;
     private Integer count;
+    private String ma5;
+    private String ma10;
+    private String ma15;
+    private String ma30;
+    private String ma60;
+    private String ma120;
+    private String ma240;
 }

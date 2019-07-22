@@ -29,10 +29,10 @@ public class TopologyTest {
         builder.setSpout("PolymerizeSpout", new PolymerizeSpout(), 1);
         //聚合生成分K
         builder.setBolt("PolymerizeBolt", new PolymerizeBolt(), 1).shuffleGrouping("PolymerizeSpout");
-        //根据分K计算各个MA 并生成点阵
+        /*//根据分K计算各个MA 并生成点阵
         builder.setBolt("MACountingBolt", new MACountingBolt(), 1).shuffleGrouping("PolymerizeBolt");
         //根据点阵预警
-        builder.setBolt("NotificationBolt", new NotificationBolt(), 1).shuffleGrouping("MACountingBolt");
+        builder.setBolt("NotificationBolt", new NotificationBolt(), 1).shuffleGrouping("MACountingBolt");*/
         config.setDebug(false);
         /*// 配置zookeeper连接主机地址，可以使用集合存放多个
         config.put(Config.STORM_ZOOKEEPER_SERVERS, Arrays.asList("127.0.0.1"));

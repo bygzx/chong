@@ -1,12 +1,16 @@
 package com.papa.cache;
 
 
+import com.papa.util.date.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author eric
@@ -18,6 +22,69 @@ public class GuavaCacheService {
     //创建静态缓存
     private static volatile Map<String,Object> stringCacheForTest = new LinkedHashMap<>();
     private static volatile Map<String,Object> stringCacheForMin = new ConcurrentHashMap<>();
+    //分钟缓存
+    private static volatile Map<String,String> cacheForMin = new LinkedHashMap<>();
+
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5,10, 30, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(50));
+
+    public GuavaCacheService(){
+        log.info("..................... init cacheForMin.....................");
+        cacheForMin();
+    }
+
+    //自旋锁，为缓存加分钟
+    private void cacheForMin(){
+        long now = System.currentTimeMillis();
+        now = DateUtils.transformToMinLong(now);
+        cacheForMin.put(String.valueOf(now),String.valueOf(now));
+        for(int i=240;i>=1;i--){
+            long date = DateUtils.addMin(-i,now);
+            date = DateUtils.transformToMinLong(date);
+            cacheForMin.put(String.valueOf(date),String.valueOf(date));
+        }
+        printAllCacheForMin(1);
+        threadPoolExecutor.submit(() ->{subThread();});
+    }
+    private void subThread(){
+        //自旋锁开始
+        while (1!=2){
+            if(cacheForMin.get(String.valueOf(DateUtils.transformToMinLong(System.currentTimeMillis())))!=null){
+                try {
+                    //log.info("..................... 自旋锁 沉睡200毫秒.....................");
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                log.info("..................... remove first cacheForMin .....................");
+                //printAllCacheForMin(0);
+                long now = System.currentTimeMillis();
+                now = DateUtils.transformToMinLong(now);
+                String firstKey = cacheForMin.entrySet().iterator().next().getKey();
+                cacheForMin.put(String.valueOf(now),String.valueOf(now));
+                if(DateUtils.getDatePoor(now,Long.parseLong(firstKey))>=5){
+                    log.info("..................... 大于5分钟了，拿到第一个元素准备删除 key:{}.....................",firstKey);
+                    cacheForMin.remove(firstKey);
+                    log.info("..................... remove first cacheForMin end.....................");
+                }
+
+                //printAllCacheForMin(1);
+            }
+        }
+    }
+
+    //打印所有元素
+    public void printAllCacheForMin(int tag){
+        Map<String,String> map = cacheForMin;
+        if(map!=null){
+            for (Map.Entry<String,String> entry : map.entrySet()) {
+                String name = tag==0?"[删除前]":"[删除后]";
+                log.info("{} 遍历所有分钟元素：{}",name,entry.toString());
+            }
+        }
+    }
+
     //删除、读取锁
     //private boolean lock=false;
 
@@ -26,6 +93,10 @@ public class GuavaCacheService {
         return stringCacheForTest;
     }
 
+    //单例模式获取缓存
+    public  Map<String,String>getCacheForMin(){
+        return cacheForMin;
+    }
     public static Map<String,Object>getStringCache(int type){
         switch (type){
             case 1:return stringCacheForTest;

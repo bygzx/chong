@@ -21,11 +21,9 @@ import com.papa.util.date.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author eric
@@ -48,76 +46,82 @@ public class MACountingBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
 
-        Map<String,Long> map =(Map<String,Long>)tuple.getValue(0);
-        Map.Entry<String,Long> entry = null;
+        Map<String,String> map =(Map<String,String>)tuple.getValue(0);
+        //<tableName,key>
+        Map.Entry<String,String> entry = null;
+        List<String> minList = new ArrayList();
+        int keepMin = 0;
         if(map.size()>0){
             log.info("MACountingBolt接到数据，开始处理");
             entry = map.entrySet().iterator().next();
-            if(entry!=null) {
-                //获取当前分钟的long值
-                Date date = new Date();
-                long nowMin = DateUtils.transformToMinLong(date.getTime());
-                //long beinDateLong = DateUtils.addMin(-1,nowMin);
-                //把从前1分钟到5分钟的数都丢到redis里
-                for(int i = 1; i <= 5; i++){
-                    long beinDateLong = DateUtils.addMin(-i,nowMin);
-                    beinDateLong = DateUtils.transformToMinLong(beinDateLong);
-                    String keyName = entry.getKey().split("_")[0]+"_"+beinDateLong;
-                    if(guavaCacheService.getCacheByKey(2,keyName)!=null){
-                        String closePrice = String.valueOf(guavaCacheService.getCacheByKey(2,keyName));
-                        redisService.zAdd(entry.getKey().split("_")[0], closePrice + "_" + beinDateLong, beinDateLong);
-                        guavaCacheService.deleteItemByKey(2, keyName);
-                    }
+            if(entry!=null && !"1".equals(entry.getKey())) {
+                Object o = redisService.hmGet(entry.getKey(), entry.getValue());
+                if(o!=null){
+                    String value = String.valueOf(o);
+                    //计算小数点后留多少位
+                    keepMin = value.substring(value.indexOf(".")+1,value.length()).length();
 
-                }
 
-                /*Map<String,Object> map1 = guavaCacheService.getStringCache(2);
-                if(map1!=null && map1.size()>0){
-                    Iterator<String> iterator = map1.keySet().iterator();
-                    while(iterator.hasNext()) {
-                        String  key = iterator.next();
-                        String name = key.split("_")[0];
-                        long date2 = Long.parseLong(key.split("_")[1]);
-                        //小于当前分钟的数据都丢到redis
-                        if(date2<nowMin){
-                            redisService.zAdd(name,map1.get(key)+"_"+date2,date2);
-                            //删除这个值
-                            iterator.remove();
-                            //guavaCacheService.deleteItemByKey(2,key);
+                    Map<String,String> minMapList = guavaCacheService.getCacheForMin();
+                    long date = DateUtils.addMin(-239,Long.parseLong(entry.getKey()));
+                    date = DateUtils.transformToMinLong(date);
+                    for(Map.Entry<String,String> entry1:minMapList.entrySet()){
+                        if(Long.parseLong(entry1.getKey())>=date &&!entry1.getKey().equals(entry.getValue())){
+                            minList.add(entry1.getKey());
+                        }
+                        if(entry1.getKey().equals(entry.getValue())){
+                            minList.add(entry1.getKey());
+                            break;
+                        }else if(Long.parseLong(entry1.getKey())>Long.parseLong(entry.getValue())){
+                            break;
                         }
                     }
-                }*/
-                //获取时间序列
-                long dateLong = entry.getValue();
-                String tableName = entry.getKey();
-                countMA_x(dateLong,tableName,5);
-                countMA_x(dateLong,tableName,10);
-                countMA_x(dateLong,tableName,15);
-                countMA_x(dateLong,tableName,30);
-                countMA_x(dateLong,tableName,60);
-                countMA_x(dateLong,tableName,120);
-                countMA_x(dateLong,tableName,240);
+                }
+                countMA_x(entry.getKey(),entry.getValue(),5,minList,keepMin);
+                countMA_x(entry.getKey(),entry.getValue(),10,minList,keepMin);
+                countMA_x(entry.getKey(),entry.getValue(),15,minList,keepMin);
+                countMA_x(entry.getKey(),entry.getValue(),30,minList,keepMin);
+                countMA_x(entry.getKey(),entry.getValue(),60,minList,keepMin);
+                countMA_x(entry.getKey(),entry.getValue(),120,minList,keepMin);
+                countMA_x(entry.getKey(),entry.getValue(),240,minList,keepMin);
             }
         }
         collector.emit(new Values(entry));
     }
     //计算x均线
-    private void countMA_x(long dateLong,String tableName,int x){
-        long beinDateLong = DateUtils.addMin(-x,dateLong);
+
+    /**
+     *
+     * @param tableName
+     * @param key
+     * @param x
+     * @param minList
+     * @param keepNo 保留小数点后多少位
+     */
+    private void countMA_x(String tableName,String key,int x,List<String> minList,int keepNo){
+        double d = 0;
         //TODO 存在逻辑问题，周末数据会获取错误
-        Set<Object> set = redisService.rangeByScore(tableName,beinDateLong,dateLong);
-        String maX = "";
-        if(set!=null && set.size()>0 &&set.size()>=x){
-            double d = 0;
-            for(Object o:set){
-                d = d+Double.parseDouble(o.toString().split("_")[0]);
+        if(minList.size()>=x){
+            for(int i = minList.size();i>minList.size()-x;i--){
+                d = d+Double.parseDouble(minList.get(i));
             }
-            maX = String.valueOf((d/set.size()));
-        }
-        //存到redis
-        if(!StringUtils.isEmpty(maX)) {
-            String tableName1 = tableName.replace(RedisKeys.MIN_CLOSE_PRICE.getName() + "", "") + RedisKeys.MA.getName() + x;
-            redisService.zAdd(tableName1, maX, dateLong);
+            BigDecimal b = new BigDecimal(d);
+            d = b.setScale(keepNo,BigDecimal.ROUND_HALF_UP).doubleValue();
+            String jsonStr = redisService.hmGet(tableName, key).toString();
+            TradeItem tradeItem = JSON.parseObject(jsonStr, TradeItem.class);
+            switch (x){
+                case 5:tradeItem.setMa5(String.valueOf(d)); break;
+                case 10:tradeItem.setMa10(String.valueOf(d));break;
+                case 15:tradeItem.setMa15(String.valueOf(d));break;
+                case 30:tradeItem.setMa30(String.valueOf(d));break;
+                case 60:tradeItem.setMa60(String.valueOf(d));break;
+                case 120:tradeItem.setMa120(String.valueOf(d));break;
+                case 240:tradeItem.setMa240(String.valueOf(d));break;
+                default:break;
+            }
+            jsonStr = JSON.toJSONString(tradeItem);
+            redisService.hmSet(tableName, key,jsonStr);
+
         }
     }
 
