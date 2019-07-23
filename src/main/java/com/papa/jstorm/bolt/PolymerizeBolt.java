@@ -89,35 +89,36 @@ public class PolymerizeBolt extends BaseRichBolt {
                     //log.info("*********************步骤2-1**************************{}",entry.toString());
                     TradeItem tradeItemTemp = entry.getValue();
                     //log.info("*********************步骤2-1**************************{}",entry.toString());
-                    String jsonStr = redisService.hmGet(tableName, key).toString();
-                    //log.info("*********************步骤2-2**************************{}",entry.toString());
-                    TradeItem tradeItem = JSON.parseObject(jsonStr, TradeItem.class);
-                    //log.info("*********************步骤2-3**************************{}",entry.toString());
-                    tradeItem.setTimeStamp(tradeItemTemp.getTimeStamp());
-                    //更新当前价
-                    tradeItem.setTradePrice(tradeItemTemp.getTradePrice());
-                    if (Float.parseFloat(tradeItemTemp.getTradePrice()) > Float.parseFloat(tradeItem.getHighPrice())) {
-                        tradeItem.setHighPrice(tradeItemTemp.getTradePrice());
-                    } else if (Float.parseFloat(tradeItemTemp.getTradePrice()) < Float.parseFloat(tradeItem.getLowPrice())) {
-                        tradeItem.setLowPrice(tradeItemTemp.getTradePrice());
+                    String jsonStr = "";
+                    Object o = redisService.hmGet(tableName, key);
+                    if (o != null) {
+                        jsonStr = redisService.hmGet(tableName, key).toString();
+                        //log.info("*********************步骤2-2**************************{}",entry.toString());
+                        TradeItem tradeItem = JSON.parseObject(jsonStr, TradeItem.class);
+                        //log.info("*********************步骤2-3**************************{}",entry.toString());
+                        tradeItem.setTimeStamp(tradeItemTemp.getTimeStamp());
+                        //更新当前价
+                        tradeItem.setTradePrice(tradeItemTemp.getTradePrice());
+                        if (Float.parseFloat(tradeItemTemp.getTradePrice()) > Float.parseFloat(tradeItem.getHighPrice())) {
+                            tradeItem.setHighPrice(tradeItemTemp.getTradePrice());
+                        } else if (Float.parseFloat(tradeItemTemp.getTradePrice()) < Float.parseFloat(tradeItem.getLowPrice())) {
+                            tradeItem.setLowPrice(tradeItemTemp.getTradePrice());
+                        }
+                        tradeItem.setClosePrice(tradeItemTemp.getTradePrice());
+                        tradeItem.setCount((tradeItem.getCount() + 1));
+                        jsonStr = JSON.toJSONString(tradeItem);
+                        redisService.hmSet(tableName, key, jsonStr);
                     }
-                    tradeItem.setClosePrice(tradeItemTemp.getTradePrice());
-                    tradeItem.setCount((tradeItem.getCount() + 1));
-                    jsonStr = JSON.toJSONString(tradeItem);
-                    //log.info("*********************步骤2-4**************************{}",entry.toString());
-                    //生成hashkey
-                    redisService.hmSet(tableName, key, jsonStr);
-                    //log.info("*********************步骤2-5**************************{}",entry.toString());
-                    //生成有序序列
-                    //map = putMinClosePriceRedis(timeStamp,tradeItem);
-                }
-                //String mesg = tuple.getString(0);
-                if (entry != null) {
-                    long endDate = System.currentTimeMillis();
-                    //500毫秒的再打印
-                    //if((endDate- begin)>500) {
+                    else{
+                        log.error("[PolymerizeBolt] 获取数据失败 key:{},value:{}", tableName, key);
+                        //TODO 数据没拿到的情况
+                        tableName = "1";
+                        key =  "1";
+                    }
+                    if (entry != null) {
+                        long endDate = System.currentTimeMillis();
                         log.info("处理完毕，处理时长：{},数据：{}", endDate - begin, entry.toString());
-                    //}
+                    }
                 }
             }else{
                 //log.info("没数据可以处理了！！！！");

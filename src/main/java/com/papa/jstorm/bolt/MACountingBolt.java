@@ -45,14 +45,14 @@ public class MACountingBolt extends BaseRichBolt {
     }
     @Override
     public void execute(Tuple tuple) {
-
+        long start = System.currentTimeMillis();
         Map<String,String> map =(Map<String,String>)tuple.getValue(0);
         //<tableName,key>
         Map.Entry<String,String> entry = null;
         List<String> minList = new ArrayList();
         int keepMin = 0;
         if(map.size()>0){
-            log.info("MACountingBolt接到数据，开始处理");
+            //log.info("MACountingBolt接到数据，开始处理");
             entry = map.entrySet().iterator().next();
             if(entry!=null && !"1".equals(entry.getKey())) {
                 Object o = redisService.hmGet(entry.getKey(), entry.getValue());
@@ -63,7 +63,7 @@ public class MACountingBolt extends BaseRichBolt {
 
 
                     Map<String,String> minMapList = guavaCacheService.getCacheForMin();
-                    long date = DateUtils.addMin(-239,Long.parseLong(entry.getKey()));
+                    long date = DateUtils.addMin(-239,Long.parseLong(entry.getValue()));
                     date = DateUtils.transformToMinLong(date);
                     for(Map.Entry<String,String> entry1:minMapList.entrySet()){
                         if(Long.parseLong(entry1.getKey())>=date &&!entry1.getKey().equals(entry.getValue())){
@@ -86,6 +86,9 @@ public class MACountingBolt extends BaseRichBolt {
                 countMA_x(entry.getKey(),entry.getValue(),240,minList,keepMin);
             }
         }
+        if(map.get("1")==null) {
+            log.info("[MACountingBolt] 处理时长：{},数据：{}", (System.currentTimeMillis() - start), map.toString());
+        }
         collector.emit(new Values(entry));
     }
     //计算x均线
@@ -101,27 +104,48 @@ public class MACountingBolt extends BaseRichBolt {
     private void countMA_x(String tableName,String key,int x,List<String> minList,int keepNo){
         double d = 0;
         //TODO 存在逻辑问题，周末数据会获取错误
-        if(minList.size()>=x){
-            for(int i = minList.size();i>minList.size()-x;i--){
-                d = d+Double.parseDouble(minList.get(i));
-            }
-            BigDecimal b = new BigDecimal(d);
-            d = b.setScale(keepNo,BigDecimal.ROUND_HALF_UP).doubleValue();
-            String jsonStr = redisService.hmGet(tableName, key).toString();
-            TradeItem tradeItem = JSON.parseObject(jsonStr, TradeItem.class);
-            switch (x){
-                case 5:tradeItem.setMa5(String.valueOf(d)); break;
-                case 10:tradeItem.setMa10(String.valueOf(d));break;
-                case 15:tradeItem.setMa15(String.valueOf(d));break;
-                case 30:tradeItem.setMa30(String.valueOf(d));break;
-                case 60:tradeItem.setMa60(String.valueOf(d));break;
-                case 120:tradeItem.setMa120(String.valueOf(d));break;
-                case 240:tradeItem.setMa240(String.valueOf(d));break;
-                default:break;
-            }
-            jsonStr = JSON.toJSONString(tradeItem);
-            redisService.hmSet(tableName, key,jsonStr);
+        try {
+            if (minList.size() >= x) {
+                for (int i = minList.size() - 1; i >= minList.size() - x; i--) {
+                    d = d + Double.parseDouble(minList.get(i));
+                }
+                d = d / x;
+                BigDecimal b = new BigDecimal(d);
+                d = b.setScale(keepNo, BigDecimal.ROUND_HALF_UP).doubleValue();
+                String jsonStr = redisService.hmGet(tableName, key).toString();
+                TradeItem tradeItem = JSON.parseObject(jsonStr, TradeItem.class);
+                switch (x) {
+                    case 5:
+                        tradeItem.setMa5(String.valueOf(d));
+                        break;
+                    case 10:
+                        tradeItem.setMa10(String.valueOf(d));
+                        break;
+                    case 15:
+                        tradeItem.setMa15(String.valueOf(d));
+                        break;
+                    case 30:
+                        tradeItem.setMa30(String.valueOf(d));
+                        break;
+                    case 60:
+                        tradeItem.setMa60(String.valueOf(d));
+                        break;
+                    case 120:
+                        tradeItem.setMa120(String.valueOf(d));
+                        break;
+                    case 240:
+                        tradeItem.setMa240(String.valueOf(d));
+                        break;
+                    default:
+                        break;
+                }
+                jsonStr = JSON.toJSONString(tradeItem);
+                redisService.hmSet(tableName, key, jsonStr);
 
+            }
+        }catch (Exception e){
+            log.error("[MACountingBolt] 计算MA报错 tableName：{} key：{},x：{}",tableName,key,x);
+            e.printStackTrace();
         }
     }
 

@@ -43,7 +43,7 @@ public class GuavaCacheService {
             date = DateUtils.transformToMinLong(date);
             cacheForMin.put(String.valueOf(date),String.valueOf(date));
         }
-        printAllCacheForMin(1);
+        //printAllCacheForMin(1);
         threadPoolExecutor.submit(() ->{subThread();});
     }
     private void subThread(){
