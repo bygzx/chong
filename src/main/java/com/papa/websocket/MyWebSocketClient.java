@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.papa.cache.GuavaCacheService;
+import com.papa.chong.service.FXService;
 import com.papa.chong.service.WebSocketExecutor;
 import com.papa.config.GetSpringBean;
 import com.papa.dto.Fx678Dto;
@@ -38,11 +39,13 @@ public class MyWebSocketClient extends WebSocketClient {
     private int tag;
     private WebSocketExecutor executor; // 用于保存获取的数据、判定是否需要关闭连接的功能类
     private GuavaCacheService guavaCacheService;
+    private FXService fxService;
     public MyWebSocketClient(String url, WebSocketExecutor executor,int tag) throws URISyntaxException {
         super(new URI(url));
         this.executor = executor;
         this.tag = tag;
         guavaCacheService = GetSpringBean.getBean(GuavaCacheService.class);
+        fxService = GetSpringBean.getBean(FXService.class);
     }
 
     @Override
@@ -58,7 +61,9 @@ public class MyWebSocketClient extends WebSocketClient {
     public void onMessage(String paramString) {
         if(paramString.length()<10) {
             log.info("TAG:{},接收到心跳数据消息：{}", tag, paramString);
-        }
+        }/*else if(paramString.indexOf("EURUSD")>=0){
+            log.info("TAG:{},接收到需要处理的数据消息：{}", tag, paramString);
+        }*/
 
         if(paramString.equals("3probe")&&tag==1){
             send("5");

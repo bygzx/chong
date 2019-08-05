@@ -113,8 +113,29 @@ public class RedisService {
      * @param value
      */
     public void hmSet(String key, Object hashKey, Object value){
-        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
-        hash.put(key,hashKey,value);
+        String lockKey = "."+key+"."+hashKey;
+        try {
+            int i=0;
+            boolean lock = true;
+            while(!lock(lockKey)) {
+                i++;
+                lock = false;
+                if(i>=4){
+                    log.error("【hmSet】 3次都为获得锁,抛弃 数据：key：{}，hashKey：{}",key,hashKey);
+                    break;
+                }
+                Thread.sleep(200);
+            }
+            if(lock) {
+                HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+                hash.put(key, hashKey, value);
+            }
+        }catch (Exception e){
+            log.error("【hmSet】  获取锁失败");
+        }finally {
+            releaseLock(lockKey);
+            log.info("【hmSet】 解锁：key：{}，hashKey：{}",key,hashKey);
+        }
     }
 
     /**
@@ -124,8 +145,31 @@ public class RedisService {
      * @return
      */
     public Object hmGet(String key, Object hashKey){
-        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
-        return hash.get(key,hashKey);
+        String lockKey = "."+key+"."+hashKey;
+        Object o = null;
+        try {
+            int i=0;
+            boolean lock = true;
+            while(!lock(lockKey)) {
+                i++;
+                lock = false;
+                if(i>=4){
+                    log.error("【hmGet】 3次都为获得锁,抛弃 数据：key：{}，hashKey：{}",key,hashKey);
+                    break;
+                }
+                Thread.sleep(200);
+            }
+            if(lock) {
+                HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+                o = hash.get(key, hashKey);
+            }
+        }catch (Exception e){
+            log.error("【hmGet】  获取锁失败");
+        }finally {
+            releaseLock(lockKey);
+            log.info("【hmGet】 解锁：key：{}，hashKey：{}",key,hashKey);
+            return o;
+        }
     }
 
     public Map<Object,Object> hmGetAll(String key){
