@@ -12,12 +12,20 @@
 	<artifactId>chong</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>chong</name>
+	<packaging>pom</packaging>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
 		<java.version>1.8</java.version>
 		<storm.version>1.2.2</storm.version>
 	</properties>
+
+	<modules>
+        <module>dto</module>
+		<module>util</module>
+		<module>proxy</module>
+		<module>scrapy</module>
+	</modules>
 
 	<dependencies>
 		<dependency>
@@ -68,6 +76,12 @@
 			<groupId>com.dyuproject.protostuff</groupId>
 			<artifactId>protostuff-core</artifactId>
 			<version>1.0.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.4.10</version>
 		</dependency>
 
 		<dependency>
@@ -221,13 +235,46 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Build-Jdk>${java.version}</Build-Jdk>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.5.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>
