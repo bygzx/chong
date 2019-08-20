@@ -187,62 +187,12 @@ public class FXServiceImpl implements FXService {
     public JSONObject getFx678Sid() {
         JSONObject jsonObject = new JSONObject();
         getFx678Data();
-        /*long currentTime = System.currentTimeMillis();
-        String url = "https://stat.fx678.com:9970/socket.io/?EIO=3&transport=polling&t="+currentTime+"-1";
-        String result ="";
-        String sid = "";
-        try {
-            result = HttpRequestUtil.doGetAndReturnString(url);
-            sid = getSid(result);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        if(!StringUtils.isEmpty(sid)){
-            String finalSid = sid;
-            log.info("TAG:{},webscoket sid :{}",1,result);
-            threadPoolExecutor.submit(() ->{
-                int count = 1;
-                        MyWebSocketExecutor executor = new MyWebSocketExecutor();
-                        try {
-                            String wsUrl = "wss://stat.fx678.com:9970/socket.io/?EIO=3&transport=websocket&sid="+ finalSid;
-                            log.info("TAG:{},webscoket wsUrl :{}",1,wsUrl);
-                            MyWebSocketClient client = new MyWebSocketClient(wsUrl, executor,1);
-                            client.connect();
-                            while (!client.getReadyState().equals(WebSocket.READYSTATE.OPEN)) {
-                                log.info("TAG:{},还没有打开,client状态：{}",1,client.getReadyState());
-                                Thread.sleep( 3 * 1000);
-                            }
-                            log.info("TAG:{},建立websocket连接",1);
 
-                            client.send("2probe");
-                            if(count==1){
-                                getFx678Data();
-                            }
-                            count++;
-                        } catch (Exception e) {
-                            log.error(e.getMessage());
-                        }
-
-                        while(!executor.isClosed()) {
-                            log.info("TAG:{},WebSocket未断开，继续接受数据中...",1);
-                            try {
-                                Thread.sleep( 10 * 1000);
-                            } catch (Exception e) {
-                                log.error(e.getMessage());
-                            }
-                        }
-            });
-
-        }*/
         return jsonObject;
     }
     
     private void getFx678Data()  {
-        /*try {
-            Thread.sleep( 1 * 1000);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }*/
+
 
         try {
 
